@@ -1,3 +1,17 @@
+# Gradient Bot
+
+This bot uses a gradient heuristic based on the map and the map objects to make the best decision.
+
+## Usage
+
+Run with:
+
+	python client.py mySecretKey arena 10
+
+When run, it will open a chrome browser with a display of the bot's internal heuristics.
+
+## Setup 
+
 Should work with python2 and python3.
 
 Install deps:
