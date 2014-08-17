@@ -26,7 +26,10 @@ class MineTile:
 class Game:
     def __init__(self, state):
         self.state = state
-        self.hero = state['hero']
+        self.heroData = state['hero']
+        self.hero = Hero(self.heroData)
+        self.heroid = self.heroData['id']
+
         self.board = Board(state['game']['board'])
         self.heroes = [Hero(state['game']['heroes'][i]) for i in range(len(state['game']['heroes']))]
         self.mines_locs = {}
@@ -76,6 +79,12 @@ class Board:
         x, y = loc
         pos = self.tiles[x][y]
         return (pos != WALL) and (pos != TAVERN) and not isinstance(pos, MineTile)
+
+    def isNotWall(self, loc):
+        'true if not wall'
+        x, y = loc
+        pos = self.tiles[x][y]
+        return (pos != WALL)
 
     def to(self, loc, direction):
         'calculate a new location given the direction'
