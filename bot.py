@@ -20,7 +20,7 @@ def normpdf(x, mean, sd):
     return num/denom
 
 
-class GradientBot(Bot):
+class GradientBot:
 
     def __init__(self):
         self.name = None
