@@ -5,7 +5,9 @@ import os
 import sys
 import requests
 import re
-from bot import RandomBot, SlowBot
+from bot import GradientBot
+from BotUI import BotUI
+import time
 
 TIMEOUT=15
 
@@ -99,6 +101,18 @@ if __name__ == "__main__":
         else:
             server_url = "http://vindinium.org"
 
+        bot_ui = BotUI()
+        bot_ui.daemon = True
+        bot_ui.start()
+        time.sleep(2)
+        print "Running Bot..."
         for i in range(number_of_games):
-            start(server_url, key, mode, number_of_turns, RandomBot())
+            bot = GradientBot()
+            bot_ui.setBot(bot)
+            bot_ui.open()
+            start(server_url, key, mode, number_of_turns, bot)
             print("\nGame finished: %d/%d" % (i+1, number_of_games))
+
+
+
+

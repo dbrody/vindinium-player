@@ -1,0 +1,280 @@
+<html>
+<style type="text/css">
+
+#info {
+	width: 300px;
+	float: left;
+}
+
+#board {
+	float: right;
+	width: 800px;
+}	
+
+.tile_row {
+	width: 100%;
+}
+
+.tile_cell {
+	width: 40px;
+	margin: 5px;
+	padding: 5px;
+	float: left;
+	border: 1px solid #CCC;
+}
+
+.tile_clear {
+	clear: both;
+}
+
+.tile_spawn {
+	float: right;
+	color: #000;
+	border: 1px solid #3333CC;
+	padding: 2px;
+	margin: -2px;
+}
+
+.tile_forest {
+	border: 2px solid #000000;
+}
+
+.tile_tavern {
+	border: 2px solid #33CC33;
+}
+
+.tile_empty {
+	border: 2px solid #EEEEEE;
+}
+
+.tile_player {
+	border: 2px solid #3333CC;
+}
+
+.tile_mine {
+	border: 2px solid #EEEE33;
+}
+
+.player_container {
+	width: 100%;
+}
+
+.player {
+	width: 100%;
+}
+
+
+</style>
+<script type="text/javascript" src="jquery-1.11.1.min.js"></script>
+<script type="text/javascript">
+
+var exampleData = {
+	"game": {
+		"viewUrl": "http://vindinium.org/gk5rh9pd",
+		"game": {
+			"turn": 12,
+			"finished": false,
+			"board": {
+				"tiles": "##@1    ####      ##      ########  @4          ####            []        []    $-    ##    ##    $-$-    ##    ##    $-    []      @3[]            ####              ########      ##@2    ####      ##",
+				"size": 10
+			},
+			"heroes": [
+				{
+					"life": 97,
+					"elo": 1200,
+					"gold": 0,
+					"userId": "2njv7dbs",
+					"pos": {"y": 1, "x": 0},
+					"spawnPos": {"y": 1, "x": 0},
+					"crashed": false,
+					"mineCount": 0,
+					"id": 1,
+					"name": "brodes"
+				},
+				{
+					"life": 97,
+					"name": "random",
+					"gold": 0,
+					"pos": {"y": 1, "x": 9},
+					"spawnPos": {"y": 1, "x": 9}, 
+					"crashed": false,
+					"mineCount": 0,
+					"id": 2
+				},
+				{
+					"life": 97,
+					"name": "random",
+					"gold": 0,
+					"pos": {"y": 6, "x": 6},
+					"spawnPos": {"y": 8, "x": 9},
+					"crashed": false,
+					"mineCount": 0,
+					"id": 3
+				}, 
+				{
+					"life": 97,
+					"name": "random",
+					"gold": 0,
+					"pos": {"y": 8, "x": 1},
+					"spawnPos": {"y": 8, "x": 0},
+					"crashed": false,
+					"mineCount": 0,
+					"id": 4
+				}
+			],
+			"id": "gk5rh9pd",
+			"maxTurns": 40
+		},
+		"hero": {
+			"life": 97,
+			"elo": 1200,
+			"gold": 0,
+			"userId": "2njv7dbs",
+			"pos": {"y": 1, "x": 0},
+			"spawnPos": {"y": 1, "x": 0},
+			"crashed": false,
+			"mineCount": 0,
+			"id": 1,
+			"name": "brodes"
+		},
+		"token": "lywp",
+		"playUrl": "http://vindinium.org/api/gk5rh9pd/lywp/play"
+	}
+};
+
+
+$(document).ready(function(){
+	
+	console.log("Ready");
+	setInfo(exampleData);
+	drawBoard(exampleData);
+	var dataFetcher = setInterval(function(){
+		$.getJSON( "/game", function( data ) {
+			console.log(data);
+			if($(".link").html().length == 0){
+				$(".link").html($("<a></a>").attr('target', 'blank').attr('href', data['game']['viewUrl']).html("View Game"));
+			}
+			setInfo(data);
+			drawBoard(data);
+			addHeur(data);
+		}).fail(function(){
+			console.log("Fetch Failed!");
+			clearInterval(dataFetcher);
+		});
+	}, 200);
+});
+
+function setInfo(data){
+	game = data['game']['game'];
+	$("#turns").html(game['turn'] + " / " + game['maxTurns']);
+	for(heroI in game['heroes']){
+		var hero = game['heroes'][heroI];
+		var player = $("<div></div>").addClass('player');
+		player.append($("<div></div>").html('Name: ' + hero['Name']));
+		player.append($("<div></div>").html('Health: ' + hero['life']));
+		player.append($("<div></div>").html('Gold: ' + hero['gold']));
+		player.append($("<div></div>").css({'clear':'both'}));
+		$("#player"+heroI).html(player);
+	}
+	
+}
+
+function drawBoard(data)
+{
+	game = data['game']['game'];
+	$("#board").empty();
+	var size = game['board']['size'];
+	var tiles = game['board']['tiles'];
+	var pos = 0;
+	var row = $('<div></div>').addClass('tile_row');
+	while(pos < tiles.length){
+		var y = Math.floor(pos / (size*2));
+		var x = (pos % (size * 2)) / 2;
+		var id = "cell_" + y + "_" + x;
+		var space1 = tiles[pos++];
+		var space2 = tiles[pos++];
+		row.append(cellContents(space1, space2).attr('id', id));
+		if(pos % (size * 2)  == 0){
+			row.append($('<div></div>').addClass('tile_clear'));
+			$('#board').append(row);
+			row = $('<div></div>').addClass('tile_row');
+		}
+	}
+
+	for(heroI in game['heroes']){
+		var hero = game['heroes'][heroI];
+		var spawnId = "cell_"+hero['spawnPos']['y'] + '_' + hero['spawnPos']['x'];
+		$("#"+spawnId).append($('<div></div>').addClass('tile_spawn').html(parseInt(heroI) + 1)); 
+	}
+}
+
+function addHeur(data){
+	var heur = data['heur'];
+	var size = game['board']['size'];
+	for(var i = 0; i < size; i++){
+		for(var j = 0; j < size; j++){
+			var val = Math.min(100, Math.max(-100, heur[i][j]));
+			var c = ("00" + Math.min(255, Math.round((val + 155))).toString(16)).slice(-2);
+			var bgcolor = "#" + c + c + c;
+			var id = "cell_" + j + "_" + i;
+			$("#"+id).css({'background-color': bgcolor});
+		}
+	}
+}
+
+function cellContents(val1, val2){
+	var contents = "";
+	if(val1 == " " && val2 == " "){
+		contents = "-";
+		classVal = "empty";
+	} else if(val1 == "#" && val2 == "#"){
+		contents = 'F';
+		classVal = "forest";
+	} else if(val1 == "[" && val2 == "]"){
+		contents = 'F';
+		classVal = "tavern";
+	} else if(val1 == "@"){
+		contents = val2;
+		classVal = "player";
+	} else if(val1 == "$"){
+		contents = "$" + val2;
+		classVal = "mine";
+	}
+	return $('<div></div>').addClass('tile_cell').addClass('tile_'+classVal).html(contents);
+}
+
+</script>
+<body>
+
+<div>
+	<div id="info">
+		<div class="link"></div>
+		<div>Turns: <span id="turns"></span></div>
+		<div><BR/><strong>Players</strong></div>
+		<table width="100%" border="1">
+			<tr>
+				<td>Player 1</td>
+				<td><div class="player_container" id="player0"></div></td>
+			</tr>
+			<tr>
+				<td>Player 2</td>
+				<td><div class="player_container" id="player1"></div></td>
+			</tr>
+			<tr>
+				<td>Player 3</td>
+				<td><div class="player_container" id="player2"></div></td>
+			</tr>
+			<tr>
+				<td>Player 4</td>
+				<td><div class="player_container" id="player3"></div></td>
+			</tr>
+		</table>
+	</div>
+	<div id="board"></div>
+
+</div>
+
+</body>
+
+
+</html>

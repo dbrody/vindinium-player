@@ -1,4 +1,5 @@
 import re
+import json
 
 TAVERN = 0
 AIR = -1
@@ -25,6 +26,7 @@ class MineTile:
 class Game:
     def __init__(self, state):
         self.state = state
+        self.hero = state['hero']
         self.board = Board(state['game']['board'])
         self.heroes = [Hero(state['game']['heroes'][i]) for i in range(len(state['game']['heroes']))]
         self.mines_locs = {}
@@ -40,6 +42,8 @@ class Game:
                 elif (obj == TAVERN):
                     self.taverns_locs.add((row, col))
 
+    def to_json(self):
+        return dict(self.state)
 
 
 class Board:
@@ -94,4 +98,12 @@ class Hero:
         self.pos = hero['pos']
         self.life = hero['life']
         self.gold = hero['gold']
+
+    def to_json(self):
+        return dict(
+            name=self.name,
+            pos=self.pos,
+            life=self.life,
+            gold=self.gold,
+        )
 

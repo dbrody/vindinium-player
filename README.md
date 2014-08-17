@@ -1,4 +1,4 @@
-# Gradient Bot
+# GradientBot
 
 This bot uses a gradient heuristic based on the map and the map objects to make the best decision.
 
